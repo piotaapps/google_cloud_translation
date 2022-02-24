@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:google_cloud_translation/src/models/language_model.dart';
 import 'package:google_cloud_translation/src/models/translation_model.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart';
 
+export 'package:google_cloud_translation/src/models/language_model.dart';
 export 'package:google_cloud_translation/src/models/translation_model.dart';
 
 class Translation {
@@ -18,6 +20,7 @@ class Translation {
 
   static const String _baseUrl = 'https://translation.googleapis.com/language/translate/v2';
   static const String _detectPath = '/detect';
+  static const String _languagesPath = '/languages';
 
   /// Returns the value of the token in google.
   String get apiKey => _apiKey;
@@ -48,6 +51,11 @@ class Translation {
   /// [text] text to detect.
   Future<TranslationModel> detectLang({required String text}) async {
     return _detectLang(text: text);
+  }
+
+  /// Returns supported languages
+  Future<List<LanguageModel>> supportedLanguages({String target = "en"}) async {
+    return _supportedLanguages(target);
   }
 
   /// Proxies the error to the callback function provided or to standard `debugPrint`.
@@ -109,4 +117,27 @@ class Translation {
       throw Exception();
     }
   }
+
+  // returns list of supported languages
+  Future<List<LanguageModel>> _supportedLanguages(String target) async {
+    String url = '$_baseUrl$_languagesPath?&key=$_apiKey&target=$target';
+    final response = await http.get(
+      Uri.parse(url),
+    );
+
+    if (response.statusCode == 200) {
+      try {
+        final body = json.decode(response.body);
+        final languages = body['data']['languages'] as List;
+        return languages.map((e) => LanguageModel(language: e['language'], name: e['name'])).toList();
+      } on Exception catch (e) {
+        _onErrorHandler('error parsing answer', e.toString());
+        throw Exception();
+      }
+    } else {
+      _onErrorHandler('${response.statusCode}', response.body);
+      throw Exception();
+    }
+  }
+
 }

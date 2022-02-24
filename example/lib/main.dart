@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_cloud_translation/google_cloud_translation.dart';
 
@@ -29,6 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
       'Toda persona tiene derecho a la educación. La educación debe ser gratuita, al menos en lo concerniente a la instrucción elemental y fundamental. La instrucción elemental será obligatoria. La instrucción técnica y profesional habrá de ser generalizada; el acceso a los estudios superiores será igual para todos, en función de los méritos respectivos.';
   TranslationModel _translated = TranslationModel(translatedText: '', detectedSourceLanguage: '');
   TranslationModel _detected = TranslationModel(translatedText: '', detectedSourceLanguage: '');
+  late List<LanguageModel> _languages = [];
 
   @override
   void initState() {
@@ -63,6 +66,8 @@ class _MyHomePageState extends State<MyHomePage> {
               const SizedBox(height: 20),
               Text('Language detected with detectLang, without translation - ${_detected.detectedSourceLanguage}',
                   style: TextStyle(color: Colors.red)),
+              Text('Languages', style: Theme.of(context).textTheme.headline3),
+              Text('$_languages', style: TextStyle(color: Colors.green))
             ],
           ),
         ),
@@ -71,6 +76,8 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () async {
           _translated = await _translation.translate(text: _text, to: 'en');
           _detected = await _translation.detectLang(text: _text);
+          // _languages = await _translation.languages();
+          // debugPrint('$_languages');
           setState(() {});
         },
         tooltip: 'Translate',
