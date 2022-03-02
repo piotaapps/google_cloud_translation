@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:google_cloud_translation/src/models/language_model.dart';
 import 'package:google_cloud_translation/src/models/translation_model.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:http/http.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 export 'package:google_cloud_translation/src/models/language_model.dart';
 export 'package:google_cloud_translation/src/models/translation_model.dart';
@@ -27,6 +29,19 @@ class Translation {
 
   /// If this is not null, any error will be sent to this function, otherwise `debugPrint` will be used.
   final void Function(Object error)? _onError;
+
+  Future<Map<String, String>> get headers async {
+    Map<String, String> _headers = {};
+    PackageInfo pi = await PackageInfo.fromPlatform();
+    if(Platform.isIOS){
+      _headers = {'X-Ios-Bundle-Identifier': pi.packageName};
+    }
+    else if (Platform.isAndroid){
+      _headers = {'X-Android-Package': pi.packageName,
+                  'X-Android-Cert': pi.buildSignature};
+    }
+    return _headers;
+  }
 
   /// Provides an instance of this class.
   /// The instance of the class created with this constructor will send the events on the fly.
@@ -73,6 +88,7 @@ class Translation {
       {required String text, required String to}) async {
     final response = await http.post(
       Uri.parse('$_baseUrl?target=$to&key=$_apiKey&q=$text'),
+      headers: await headers
     );
 
     if (response.statusCode == 200) {
@@ -98,6 +114,7 @@ class Translation {
   Future<TranslationModel> _detectLang({required String text}) async {
     final response = await http.post(
       Uri.parse('$_baseUrl$_detectPath?&key=$_apiKey&q=$text'),
+      headers: await headers
     );
 
     if (response.statusCode == 200) {
@@ -123,6 +140,7 @@ class Translation {
     String url = '$_baseUrl$_languagesPath?&key=$_apiKey&target=$target';
     final response = await http.get(
       Uri.parse(url),
+      headers: await headers
     );
 
     if (response.statusCode == 200) {
