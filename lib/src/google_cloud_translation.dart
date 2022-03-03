@@ -87,8 +87,12 @@ class Translation {
   Future<TranslationModel> _translateText(
       {required String text, required String to}) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl?target=$to&key=$_apiKey&q=$text'),
-      headers: await headers
+      Uri.parse('$_baseUrl?key=$_apiKey'),
+      headers: await headers,
+      body: {
+        'target': '$to',
+        'q': '$text'
+      }
     );
 
     if (response.statusCode == 200) {
@@ -113,8 +117,9 @@ class Translation {
   /// Sends the text to detect language to the API endpoint.
   Future<TranslationModel> _detectLang({required String text}) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl$_detectPath?&key=$_apiKey&q=$text'),
-      headers: await headers
+      Uri.parse('$_baseUrl$_detectPath?&key=$_apiKey'),
+      headers: await headers,
+      body: {'q': '$text'}
     );
 
     if (response.statusCode == 200) {
