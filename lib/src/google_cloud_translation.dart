@@ -62,6 +62,13 @@ class Translation {
     return _translateText(text: text, to: to);
   }
 
+   /// Sends a request to translate.
+  /// [text] list of text to translate.
+  /// [to] to what language translate.
+  Future<List<TranslationModel>> translateList({required List<String> text, required String to}) async {
+    return _translateTextList(text: text, to: to);
+  } 
+
   /// Detects source lang.
   /// [text] text to detect.
   Future<TranslationModel> detectLang({required String text}) async {
@@ -69,7 +76,7 @@ class Translation {
   }
 
   /// Returns supported languages
-  Future<List<LanguageModel>> supportedLanguages({String target = "en"}) async {
+  Future<List<LanguageModel>> supportedLanguages({String target = 'en'}) async {
     return _supportedLanguages(target);
   }
 
@@ -104,6 +111,40 @@ class Translation {
           translatedText: HtmlUnescape().convert(translation['translatedText']),
           detectedSourceLanguage: translation['detectedSourceLanguage'],
         );
+      } on Exception catch (e) {
+        _onErrorHandler('error parsing answer', e.toString());
+        throw Exception();
+      }
+    } else {
+      _onErrorHandler('${response.statusCode}', response.body);
+      throw Exception();
+    }
+  }
+
+    /// Sends the text array to translate to the API endpoint.
+  Future<List<TranslationModel>> _translateTextList(
+      {required List<String> text, required String to}) async {
+    final q = text.map((e) => json.encode(e)).toList();
+    final response = await http.post(
+      Uri.parse('$_baseUrl?key=$_apiKey'),
+      headers: await headers,
+      body: json.encode({
+        'target': '$to',
+        'q': text
+      })
+    );
+
+    if (response.statusCode == 200) {
+      try {
+        final body = json.decode(response.body);
+        final translations = body['data']['translations'];
+        List<TranslationModel> translationList = [];
+        translations.forEach((translation) =>
+          translationList.add(TranslationModel(
+            translatedText: HtmlUnescape().convert(translation['translatedText']),
+            detectedSourceLanguage: translation['detectedSourceLanguage'],
+          )));
+        return translationList;
       } on Exception catch (e) {
         _onErrorHandler('error parsing answer', e.toString());
         throw Exception();
