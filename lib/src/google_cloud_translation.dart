@@ -124,7 +124,7 @@ class Translation {
     /// Sends the text array to translate to the API endpoint.
   Future<List<TranslationModel>> _translateTextList(
       {required List<String> text, required String to}) async {
-    final q = text.map((e) => json.encode(e)).toList();
+    // final q = text.map((e) => json.encode(e)).toList();
     final response = await http.post(
       Uri.parse('$_baseUrl?key=$_apiKey'),
       headers: await headers,
