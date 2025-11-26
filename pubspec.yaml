@@ -1,6 +1,6 @@
 name: google_cloud_translation
 description: Flutter API for google cloud translation - translate to given language.
-version: 0.0.10
+version: 0.0.11
 homepage: https://github.com/awaik/google_cloud_translation
 
 environment:
@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   http: ^1.4.0
   html_unescape: ^2.0.0
-  package_info_plus: ^8.3.0
+  package_info_plus: ^9.0.0
 
 dev_dependencies:
   flutter_test:
